@@ -69,5 +69,16 @@ function tick(){let s=Math.max(0,Math.floor(((Math.floor(Date.now()/900000)+1)*9
 $('reset').addEventListener('click',()=>{if(confirm('Clear signal history and performance scores?')){records=[];save();render()}});
 render();refresh();setInterval(refresh,15000);setInterval(tick,1000);tick();
 })();
-</script></body></html>
+</script>
+
+<section id="market-risk">
+  <h2>Bitcoin Reversal Risk</h2>
+  <p id="reversal-risk">Waiting for market data...</p>
+
+  <h2>Whale Activity Monitor</h2>
+  <p id="whale-activity">Live whale data not connected</p>
+</section>
+
+</body>
+</html>
 <div id="btc-chart"></div>
