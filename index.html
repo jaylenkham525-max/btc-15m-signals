@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020"><title>BTC 15m Signal Lab</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#121a2e;--line:#26324c;--text:#edf2ff;--muted:#9ba8c7;--green:#4ade80;--red:#fb7185;--gold:#fbbf24}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#17213c 0,#0b1020 55%);color:var(--text);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:760px;margin:auto;padding:20px 14px 40px}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:16px}.eyebrow{font-size:11px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}.title{font-size:24px;font-weight:800;margin:4px 0}.pill{border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:12px;color:var(--muted);white-space:nowrap}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.card{background:rgba(18,26,46,.94);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:10px;min-width:0}.label{font-size:12px;color:var(--muted);margin-bottom:8px}.price{font-size:27px;font-weight:800;letter-spacing:-.04em}.big{font-size:22px;font-weight:800}.muted{color:var(--muted)}.green{color:var(--green)}.red{color:var(--red)}.gold{color:var(--gold)}.signal{font-size:25px;font-weight:900;margin:3px 0 8px}.small{font-size:12px;line-height:1.5;color:var(--muted)}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{padding:10px;border-radius:12px;background:#0d1426;border:1px solid #202b43}.stat strong{display:block;font-size:18px;margin-top:4px}.bar{height:8px;background:#273149;border-radius:8px;overflow:hidden;margin:10px 0}.bar span{display:block;height:100%;width:40%;background:var(--gold);transition:width .3s}.section-title{font-size:16px;font-weight:800;margin:2px 0 12px}.notice{padding:11px 12px;border-radius:12px;background:#2a2111;border:1px solid #5c4720;color:#f8d889;font-size:12px;line-height:1.5;margin-bottom:10px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}th,td{text-align:left;padding:10px 7px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:600}.empty{color:var(--muted);font-size:13px;padding:12px 0}.footer{margin-top:16px;font-size:11px;line-height:1.55;color:var(--muted)}.error{color:var(--red);font-size:12px;margin-top:8px}.btn{font:inherit;font-weight:700;border:1px solid var(--line);border-radius:11px;padding:10px 12px;cursor:pointer;color:var(--text);background:#202b43}.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.tag{display:inline-block;border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:11px;color:var(--muted)}
+@media(min-width:600px){main{padding:28px 20px}.price{font-size:34px}}
+</style></head><body><main>
+<div class="top"><div><div class="eyebrow">Independent demo · signals only</div><div class="title">BTC 15m Signal Lab</div></div><div class="pill" id="connection">Connecting…</div></div>
+<div class="notice">Signals are experimental rule-based indicators, not a trained AI model or financial advice. “Win rate” scores each directional signal against the next completed 15-minute candle close; it does not represent real trading returns or include fees, spreads or slippage.</div>
+<div class="grid">
+<section class="card"><div class="label">Bitcoin spot price · BTC/USDT</div><div class="price" id="price">—</div><div class="small" id="updated">Waiting for public market data</div></section>
+<section class="card"><div class="label">Next 15m candle in</div><div class="price gold" id="countdown">--:--</div><div class="small">UTC candle boundary</div></section>
+</div>
+<section class="card"><div class="label">Latest directional signal</div><div class="signal gold" id="signal">LOADING</div><div class="small" id="reason">Fetching completed candles…</div><div class="bar"><span id="strength"></span></div><div class="small" id="confidence">Rule alignment: — · Not a calibrated probability</div></section>
+<section class="card"><div class="section-title">Indicator snapshot</div><div class="stats"><div class="stat"><div class="label">RSI (14)</div><strong id="rsi">—</strong></div><div class="stat"><div class="label">EMA (9)</div><strong id="ema9">—</strong></div><div class="stat"><div class="label">EMA (21)</div><strong id="ema21">—</strong></div></div></section>
+<section class="card"><div class="section-title">Entry / exit guidance</div><div id="guidance" class="small">Waiting for a signal.</div><div class="small" style="margin-top:10px">Guidance is informational only. This page does not place trades or connect to a wallet/exchange account.</div></section>
+<section class="card"><div class="section-title">Signal performance</div><div class="stats"><div class="stat"><div class="label">Directional hit rate</div><strong id="winrate">—</strong></div><div class="stat"><div class="label">Scored signals</div><strong id="scored">0</strong></div><div class="stat"><div class="label">Pending</div><strong id="pending">0</strong></div></div><div class="small" style="margin-top:10px">A signal is scored after the next 15-minute candle closes. Flat moves count as incorrect. This is a simple close-to-close direction test, not a backtest of executable trades.</div></section>
+<section class="card"><div class="row"><div class="section-title">Signal history</div><button class="btn" id="reset">Reset history</button></div><div class="table-wrap"><table><thead><tr><th>Time UTC</th><th>Signal</th><th>Reference price</th><th>Outcome</th></tr></thead><tbody id="history"></tbody></table></div><div id="historyEmpty" class="empty">Signals appear here when a completed candle produces a bullish or bearish setup.</div></section>
+<div class="footer">Data source: Binance public spot market-data endpoints, no API key required. Price refreshes every 15 seconds. Signal rules use completed 15-minute candles only. History is stored in this browser's localStorage; clearing website data removes it. A future “AI” layer should be tested out-of-sample against this baseline before trusting its predictions.</div>
+</main>
+<script>
+(()=> {
+const API='https://data-api.binance.vision/api/v3';let candles=[],price=null,lastKey='',records=load('btc15_signal_records',[]);
+const $=id=>document.getElementById(id);
+function load(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{return f}}
+function save(){localStorage.setItem('btc15_signal_records',JSON.stringify(records.slice(0,300)))}
+const money=n=>n==null?'—':'$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt=n=>n==null?'—':Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const tm=t=>new Date(t).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'UTC'});
+function ema(a,p){if(a.length<p)return null;let e=a.slice(0,p).reduce((x,y)=>x+y,0)/p,k=2/(p+1);for(let i=p;i<a.length;i++)e=a[i]*k+e*(1-k);return e}
+function rsi(a,p=14){if(a.length<=p)return null;let g=0,l=0;for(let i=a.length-p;i<a.length;i++){let d=a[i]-a[i-1];if(d>0)g+=d;else l-=d}return l===0?100:100-100/(1+g/l)}
+function scoreOld(completed){for(const rec of records){if(rec.outcome!=='PENDING'&&rec.outcome!=='—')continue;let target=completed.find(c=>c.openTime===rec.targetCandle);if(target){let delta=target.close-rec.reference;rec.outcome=(rec.direction==='BULLISH'?delta>0:delta<0)?'HIT':'MISS';rec.scoredAt=Date.now()}}save()}
+function analyze(){
+if(candles.length<25)return;
+const completed=candles.slice(0,-1),closes=completed.map(c=>c.close),e9=ema(closes,9),e21=ema(closes,21),r=rsi(closes,14),last=closes[closes.length-1];
+$('ema9').textContent=fmt(e9);$('ema21').textContent=fmt(e21);$('rsi').textContent=r==null?'—':r.toFixed(1);
+let dir='WAIT',reason='Mixed conditions. No directional setup.',align=25;
+if(e9>e21&&last>e9&&r>=50&&r<=70){dir='BULLISH';reason='Completed candle above EMA 9, EMA 9 above EMA 21, and RSI between 50 and 70.';align=Math.min(90,55+(r-50)*1.3)}
+else if(e9<e21&&last<e9&&r>=30&&r<50){dir='BEARISH';reason='Completed candle below EMA 9, EMA 9 below EMA 21, and RSI between 30 and 50.';align=Math.min(90,55+(50-r)*1.3)}
+else if(r>70){reason='RSI above 70; momentum may be extended. Wait for a clearer setup.';align=20}
+else if(r<30){reason='RSI below 30; momentum may be stretched. Wait for a clearer setup.';align=20}
+$('signal').textContent=dir;$('signal').className='signal '+(dir==='BULLISH'?'green':dir==='BEARISH'?'red':'gold');$('reason').textContent=reason;$('strength').style.width=align+'%';$('strength').style.background=dir==='BULLISH'?'var(--green)':dir==='BEARISH'?'var(--red)':'var(--gold)';$('confidence').textContent='Rule alignment: '+Math.round(align)+'% · Not a calibrated probability';
+const c=completed[completed.length-1],key=c.openTime+'-'+dir;
+if(key!==lastKey){lastKey=key;if(dir!=='WAIT'){
+const targetOpen=c.openTime+900000;
+records.unshift({id:key,time:Date.now(),direction:dir,reference:c.close,targetCandle:targetOpen,outcome:'PENDING'});
+records=records.slice(0,300);save();}}
+const pending=records.find(x=>x.outcome==='PENDING');
+if(dir==='BULLISH')$('guidance').innerHTML='<span class="green"><b>Potential long setup</b></span> · Reference '+money(c.close)+'. A conservative exit plan would define an invalidation level and target before acting; this prototype does not calculate a validated stop or target.';
+else if(dir==='BEARISH')$('guidance').innerHTML='<span class="red"><b>Potential bearish setup</b></span> · Reference '+money(c.close)+'. Avoid treating this as a short recommendation without a risk plan; this prototype does not calculate a validated stop or target.';
+else $('guidance').textContent='No entry setup under the current rules. If a position is already open elsewhere, use your own pre-defined exit and risk rules; this page does not track external positions.';
+render();
+}
+async function refresh(){try{
+const [pr,kr]=await Promise.all([fetch(API+'/ticker/price?symbol=BTCUSDT',{cache:'no-store'}),fetch(API+'/klines?symbol=BTCUSDT&interval=15m&limit=100',{cache:'no-store'})]);
+if(!pr.ok||!kr.ok)throw new Error('Market-data request failed');let p=await pr.json(),k=await kr.json();price=Number(p.price);candles=k.map(x=>({openTime:+x[0],open:+x[1],high:+x[2],low:+x[3],close:+x[4],closeTime:+x[6]}));
+$('price').textContent=money(price);$('updated').textContent='Updated '+new Date().toLocaleTimeString();$('connection').textContent='Live data connected';$('connection').className='pill green';
+scoreOld(candles.slice(0,-1));analyze();render();
+}catch(e){$('connection').textContent='Data unavailable';$('connection').className='pill red';$('reason').textContent='Could not load public market data. Try refreshing later. '+e.message}}
+function render(){const scored=records.filter(r=>r.outcome==='HIT'||r.outcome==='MISS'),hits=scored.filter(r=>r.outcome==='HIT').length;
+$('winrate').textContent=scored.length?(hits/scored.length*100).toFixed(1)+'%':'—';$('scored').textContent=scored.length;$('pending').textContent=records.filter(r=>r.outcome==='PENDING').length;
+$('history').innerHTML=records.map(r=>'<tr><td>'+tm(r.time)+'</td><td class="'+(r.direction==='BULLISH'?'green':'red')+'">'+r.direction+'</td><td>'+money(r.reference)+'</td><td class="'+(r.outcome==='HIT'?'green':r.outcome==='MISS'?'red':'gold')+'">'+r.outcome+'</td></tr>').join('');
+$('historyEmpty').style.display=records.length?'none':'block';}
+function tick(){let s=Math.max(0,Math.floor(((Math.floor(Date.now()/900000)+1)*900000-Date.now())/1000));$('countdown').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+$('reset').addEventListener('click',()=>{if(confirm('Clear signal history and performance scores?')){records=[];save();render()}});
+render();refresh();setInterval(refresh,15000);setInterval(tick,1000);tick();
+})();
+</script></body></html>
